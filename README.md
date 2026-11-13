@@ -96,7 +96,8 @@ og.VolumePolicy(kind="tick", unknown="zero_in_ranges",
 og.volume_known(bars, policy)                       # True where the volume is a real value (zero included)
 ```
 
-See [docs/volume.md](docs/volume.md) and the full [reference](docs/reference.md).
+See [docs/volume.md](https://github.com/xregun/ohlcv-guard/blob/main/docs/volume.md) and the full
+[reference](https://github.com/xregun/ohlcv-guard/blob/main/docs/reference.md).
 
 ## What it doesn't do
 
@@ -106,4 +107,5 @@ See [docs/volume.md](docs/volume.md) and the full [reference](docs/reference.md)
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache-2.0. See [LICENSE](https://github.com/xregun/ohlcv-guard/blob/main/LICENSE) and
+[NOTICE](https://github.com/xregun/ohlcv-guard/blob/main/NOTICE).

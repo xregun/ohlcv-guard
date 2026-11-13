@@ -11,6 +11,12 @@ JAN1 = pd.Timestamp("2024-01-01", tz="UTC")
 HOUR = pd.Timedelta(hours=1)
 
 
+def test_the_installed_version_is_the_package_version():
+    from importlib.metadata import version
+
+    assert version("ohlcv-guard") == og.__version__
+
+
 # ---- timeframes ----
 
 @pytest.mark.parametrize(("value", "ms"), [

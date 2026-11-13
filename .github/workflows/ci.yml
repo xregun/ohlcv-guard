@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        pandas: ["latest"]
+        include:
+          - { os: ubuntu-latest, python: "3.10", pandas: "2.1.*", numpy: "1.26.*" }
+          - { os: ubuntu-latest, python: "3.12", pandas: "2.2.*", numpy: "2.0.*" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        shell: bash
+        run: |
+          python -m pip install -e .[dev]
+          if [ "${{ matrix.pandas }}" != "latest" ]; then python -m pip install "pandas==${{ matrix.pandas }}" "numpy==${{ matrix.numpy }}"; fi
+      - run: python -m pytest --cov
+      - run: python -m ruff check src tests
+      - run: python -m mypy

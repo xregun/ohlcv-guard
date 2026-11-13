@@ -31,5 +31,18 @@ jobs:
           python -m pip install -e .[dev]
           if [ "${{ matrix.pandas }}" != "latest" ]; then python -m pip install "pandas==${{ matrix.pandas }}" "numpy==${{ matrix.numpy }}"; fi
       - run: python -m pytest --cov
+
+  # Type stubs differ across pandas / NumPy versions, so lint and types run once, on pinned tool versions.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - name: Install
+        run: |
+          python -m pip install -e .
+          python -m pip install "pandas==3.0.6" "numpy==2.5.3" "pandas-stubs==3.1.0.261029" "mypy==2.4.1" "ruff==0.17.5"
       - run: python -m ruff check src tests
       - run: python -m mypy

@@ -105,7 +105,7 @@ def test_one_bar_a_day_in_an_hourly_series_is_sparse():
 
 def test_a_quiet_but_hourly_series_with_weekends_is_not_sparse(make_bars):
     bars = make_bars(periods=24 * 60)  # 60 days hourly
-    weekday = bars["ts"].dt.weekday
+    weekday = bars["ts"].dt.day_of_week  # (dt.weekday is deprecated from pandas 3.1)
     weekdays_only = bars[weekday < 5].reset_index(drop=True)
     assert normalize(weekdays_only, "1h").report.get("SPARSE_FOR_TIMEFRAME") is None
 

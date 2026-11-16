@@ -50,3 +50,49 @@ jobs:
           python -m pip install "pandas==3.0.6" "numpy==2.5.3" "pandas-stubs==3.1.0.261029" "mypy==2.4.1" "ruff==0.17.5"
       - run: python -m ruff check src tests
       - run: python -m mypy
+
+  # The release workflow's build -> upload -> download path, with the same pinned actions, on every push and pull
+  # request (Dependabot's included). It never publishes and asks for no OIDC token.
+  release-dry-run-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Build
+        run: |
+          python -m pip install build
+          python -m build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: dist-dry-run
+          path: dist/
+          retention-days: 1
+
+  release-dry-run-download:
+    needs: release-dry-run-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          name: dist-dry-run
+          path: dist/
+      - name: The downloaded files are the package, as the publish step would see them
+        run: |
+          ls -l dist
+          test "$(ls dist/*.whl | wc -l)" = 1
+          test "$(ls dist/*.tar.gz | wc -l)" = 1
+          python3 - <<'PY'
+          import glob, tarfile, zipfile
+          wheel = zipfile.ZipFile(glob.glob("dist/*.whl")[0])
+          meta = next(n for n in wheel.namelist() if n.endswith(".dist-info/METADATA"))
+          text = wheel.read(meta).decode()
+          assert "Name: ohlcv-guard" in text and "License-Expression: Apache-2.0" in text, text[:300]
+          assert any(n.endswith("ohlcv_guard/__init__.py") for n in wheel.namelist())
+          sdist = tarfile.open(glob.glob("dist/*.tar.gz")[0])
+          assert any(n.endswith("/pyproject.toml") for n in sdist.getnames())
+          print("wheel and sdist OK:", meta)
+          PY
